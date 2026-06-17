@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MERIDIAN — A Century of Human Progress</title>
+  <meta name="description" content="An interactive D3.js visualization of 142 countries over 55 years (1952-2007), tracing how the world got wealthier, healthier, and more unequal." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-grid">
+      <div class="hero-meta">
+        <div class="kicker">DSC327 · Data Visualization Techniques · BDS 6</div>
+        <div class="dateline">COMSATS University Islamabad · Spring 2026</div>
+      </div>
+      <div class="hero-headline">
+        <h1>MERIDIAN</h1>
+        <p class="standfirst">
+          A century of human progress, drawn from the ground up. Across <strong>142 countries</strong> and <strong>55 years</strong>, this is the story of how the world got wealthier, healthier, and more unequal, all at once.
+        </p>
+        <div class="byline">
+          <span>By Muhammad Asharib Khan &amp; Wasi Ahmed Malik</span>
+          <span class="sep">·</span>
+          <span class="dataset-meta">Gapminder, 1952–2007</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-numbers" id="hero-numbers"></div>
+  </header>
+
+  <!-- STICKY CONTROL RAIL -->
+  <div class="control-rail" id="control-rail">
+    <div class="rail-inner">
+      <div class="rail-section rail-year">
+        <label class="rail-label">Year</label>
+        <div class="year-control">
+          <button class="play-btn" id="play-btn" aria-label="Play/pause year animation">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
+          </button>
+          <input type="range" id="year-slider" min="1952" max="2007" step="5" value="2007" />
+          <div class="year-display" id="year-display">2007</div>
+        </div>
+      </div>
+      <div class="rail-section rail-continents">
+        <label class="rail-label">Continent</label>
+        <div class="continent-chips" id="continent-chips"></div>
+      </div>
+      <div class="rail-section rail-search">
+        <label class="rail-label">Highlight country</label>
+        <input type="search" id="country-search" placeholder="Type a country..." autocomplete="off" />
+        <div id="search-results" class="search-results" hidden></div>
+      </div>
+      <div class="rail-section rail-pinned">
+        <label class="rail-label">Pinned</label>
+        <div class="pinned-chips" id="pinned-chips"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHT BANNER -->
+  <aside class="insight-banner" id="insight-banner">
+    <div class="insight-icon">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="1.5"/><path d="M12 8v5M12 16v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="insight-text" id="insight-text">Loading the world&hellip;</div>
+  </aside>
+
+  <main>
+
+    <!-- CHART 1 — THE ROSLING RACE -->
+    <section class="chart-section" id="section-race">
+      <div class="section-header">
+        <div class="section-number">01</div>
+        <h2>The Rosling Race</h2>
+        <p class="dek">Every dot is a country. Sliding right means richer; rising up means longer lives. Press play and watch the world climb the staircase, faster in some places than others.</p>
+      </div>
+      <div class="chart-stage chart-stage-wide">
+        <div class="chart-host" id="chart-race"></div>
+        <div class="annotation-rail" id="anno-race"></div>
+      </div>
+      <p class="caption">x-axis: GDP per capita, inflation-adjusted USD (log scale). y-axis: life expectancy at birth (years). Bubble area: population. Colour: continent. Bubbles are drawn back-to-front by population so smaller countries stay legible.</p>
+    </section>
+
+    <!-- CHART 2 — THE WORLD MAP -->
+    <section class="chart-section" id="section-map">
+      <div class="section-header">
+        <div class="section-number">02</div>
+        <h2>The Choropleth</h2>
+        <p class="dek">The same story, painted on the globe. Toggle the metric. Drag the year slider above. Click a country to pin it across every chart on this page.</p>
+      </div>
+      <div class="metric-toggle" id="metric-toggle" role="tablist" aria-label="Choropleth metric"></div>
+      <div class="chart-stage">
+        <div class="chart-host" id="chart-map"></div>
+        <div class="map-legend" id="map-legend"></div>
+      </div>
+      <p class="caption">Equirectangular projection. Sequential colour scale anchored to the metric&rsquo;s global range across all years, so colours are comparable as you scrub through time.</p>
+    </section>
+
+    <!-- CHART 3 — TRAJECTORIES -->
+    <section class="chart-section" id="section-trajectory">
+      <div class="section-header">
+        <div class="section-number">03</div>
+        <h2>Trajectories</h2>
+        <p class="dek">Pin a handful of countries and trace their path through wealth-and-health space from 1952 to 2007. Some lines arc gracefully. Some stall. A few collapse and recover.</p>
+      </div>
+      <div class="chart-stage">
+        <div class="chart-host" id="chart-trajectory"></div>
+        <div class="trajectory-legend" id="trajectory-legend"></div>
+      </div>
+      <p class="caption">Each line is a country&rsquo;s 12-point path. Start markers are hollow; end markers are filled. Dots between are decennial reference points. Pin countries above or click them on any chart.</p>
+    </section>
+
+    <!-- CHART 4 — BEESWARM -->
+    <section class="chart-section" id="section-swarm">
+      <div class="section-header">
+        <div class="section-number">04</div>
+        <h2>The Inequality Swarm</h2>
+        <p class="dek">For the selected year, every country is a circle, packed by life expectancy, split by continent. Tight clusters mean a region is converging. Long tails mean it isn&rsquo;t.</p>
+      </div>
+      <div class="chart-stage">
+        <div class="chart-host" id="chart-swarm"></div>
+      </div>
+      <p class="caption">Force-based beeswarm with continent rows. Radius encodes population (cube root scaled). Continent medians are drawn as vertical ticks.</p>
+    </section>
+
+    <!-- CHART 5 — BUMP CHART -->
+    <section class="chart-section" id="section-bump">
+      <div class="section-header">
+        <div class="section-number">05</div>
+        <h2>The Bump Chart</h2>
+        <p class="dek">Who climbed the rankings, and who slipped? The 20 most populous countries, ranked on the chosen metric across the seven decades.</p>
+      </div>
+      <div class="bump-metric-toggle" id="bump-metric-toggle" role="tablist" aria-label="Bump chart metric"></div>
+      <div class="chart-stage">
+        <div class="chart-host" id="chart-bump"></div>
+      </div>
+      <p class="caption">Rank 1 = highest in the chosen metric for that year. Lines that cross are countries that overtook each other. Hover a row to read the country&rsquo;s full trajectory.</p>
+    </section>
+
+    <!-- CHART 6 — SMALL MULTIPLES -->
+    <section class="chart-section" id="section-trellis">
+      <div class="section-header">
+        <div class="section-number">06</div>
+        <h2>The Trellis</h2>
+        <p class="dek">One panel per country, three lines per panel: wealth, health, headcount. Patterns the headline charts cannot resolve become obvious here.</p>
+      </div>
+      <div class="trellis-sort" id="trellis-sort"></div>
+      <div class="chart-stage chart-stage-wide">
+        <div class="chart-host trellis-grid" id="chart-trellis"></div>
+      </div>
+      <p class="caption">Each panel is a 12-point series, normalised to its own min-max within the panel so shapes are comparable across countries of very different scales. Colour encodes the metric, not the continent.</p>
+    </section>
+
+  </main>
+
+  <!-- PAGE FOOTER -->
+  <footer class="page-footer">
+    <div class="footer-grid">
+      <div class="footer-block">
+        <div class="footer-heading">MERIDIAN</div>
+        <p>An interactive visualisation of the Gapminder dataset, built with D3.js v7. Six coordinated views, one shared state.</p>
+      </div>
+      <div class="footer-block">
+        <div class="footer-heading">Team</div>
+        <p>
+          Muhammad Asharib Khan &mdash; FA23-BDS-025<br/>
+          Wasi Ahmed Malik &mdash; FA23-BDS-044<br/>
+          BDS 6 &middot; COMSATS Islamabad
+        </p>
+      </div>
+      <div class="footer-block">
+        <div class="footer-heading">Data &amp; Tools</div>
+        <p>
+          Source: Gapminder via the canonical Jenny Bryan mirror.<br/>
+          World boundaries: world-atlas (TopoJSON, 110m).<br/>
+          Charts: D3.js v7. Type: DM Serif Display &amp; IBM Plex Sans.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>Lab Terminal Project &middot; DSC327 Data Visualization Techniques &middot; Spring 2026</span>
+    </div>
+  </footer>
+
+  <div id="tooltip" class="tooltip" role="tooltip"></div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
