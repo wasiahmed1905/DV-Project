@@ -110,7 +110,7 @@ function render() {
     .on("mouseleave", () => hideTooltip());
 
   // MERGE
-  const merged = enter.merge(panels);
+  const merged = enter.merge(panels).order();
   merged.classed("pinned", (d) => state.pinned.has(d.country));
   merged.select(".trellis-panel-name").text((d) => d.country);
   merged.select(".trellis-panel-cont").html((d) => {
